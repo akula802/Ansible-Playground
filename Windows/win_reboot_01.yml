@@ -28,7 +28,7 @@
   - name: DAS REBOOT
     ansible.windows.win_reboot:
       reboot_timeout: 900
-        #post_reboot_delay: 120
+      post_reboot_delay: 120
     register: result
     failed_when: not result.rebooted
     
