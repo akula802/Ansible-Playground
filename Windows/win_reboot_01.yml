@@ -12,7 +12,7 @@
     service_name_3: Themes
 
   tasks:
-  # Stop any/all services needed for shutown
+  # Stop any/all services needed for shutdown
   - name: Stop and disable the app services
     ansible.windows.win_service:
       name: "{{ item }}"
