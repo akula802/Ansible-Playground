@@ -1,0 +1,50 @@
+---
+- name: Properly reboot a Windows server
+  gather_facts: false
+  hosts: Windows_Servers
+  vars:
+    service_desired_poweroff_state: stopped
+    service_desired_poweroff_startupmode: disabled
+    service_desired_poweron_state: started
+    service_desired_poweron_startupmode: auto
+    service_name_1: QEMU-GA
+    service_name_2: BITS
+    service_name_3: Themes
+
+  tasks:
+  # Stop any/all services needed for shutown
+  - name: Stop and disable the app services
+    ansible.windows.win_service:
+      name: "{{ item }}"
+      state: "{{ service_desired_poweroff_state }}"
+      start_mode: "{{ service_desired_poweroff_startupmode }}"
+    loop:
+      - "{{ service_name_1 }}"
+      - "{{ service_name_2 }}"
+      - "{{ service_name_3 }}"
+
+  # DAS REBOOT
+  # Waits 900 sec for updates etc (default=600), and waits 120 sec after rebooting to continue
+  - name: DAS REBOOT
+    ansible.windows.win_reboot:
+      reboot_timeout: 900
+        #post_reboot_delay: 120
+    register: result
+    failed_when: not result.rebooted
+    
+  # Show some info since the reboot suceeded
+  - name: Status udate - Post-reboot action
+    debug:
+      msg: "Server rebooted after {{ result.elapsed }} seconds. Proceeding with subsequent tasks..."
+
+  # Start and re-enable the app services
+  - name: Start and re-enable the app services
+    ansible.windows.win_service:
+      name: "{{ item }}"
+      state: "{{ service_desired_poweron_state }}"
+      start_mode: "{{ service_desired_poweron_startupmode }}"
+    loop:
+      - "{{ service_name_1 }}"
+      - "{{ service_name_2 }}"
+      - "{{ service_name_3 }}"
+
