@@ -1,0 +1,77 @@
+---
+- name: Properly reboot a Windows server, with additional constraints
+  gather_facts: false
+  hosts: Windows_Servers
+  vars:
+      service_desired_poweroff_state: stopped
+      service_desired_poweroff_startupmode: disabled
+      service_desired_poweron_state: started
+      service_desired_poweron_startupmode: auto
+      # Note: These services are inconsequential for testing
+      service_name_1: QEMU-GA
+      service_name_2: BITS
+      service_name_3: Themes
+
+  tasks:
+  # Stop any/all services that need to be stopped prior to OS shutdown
+  - name: Stop and disable all necessary services
+    ansible.windows.win_service:
+      name: "{{ item }}"
+      state: "{{ service_desired_poweroff_state }}"
+      start_mode: "{{ service_desired_poweroff_startupmode }}"
+    loop:
+      - "{{ service_name_1 }}"
+      - "{{ service_name_2 }}"
+      - "{{ service_name_3 }}"
+  
+  # Use this if a process needs to exit before continuing
+  # Waits 300 seconds, with 10 seconds between each check (default=1)
+  # https://docs.ansible.com/ansible/2.9/modules/win_wait_for_process_module.html#win-wait-for-process-module
+  - name: Wait for a specific process to exit
+    ansible.windows.win_wait_for_process:
+      process_name_exact: vss
+      state: absent
+      timeout: 300
+      sleep: 10
+
+  # Use this if a port needs to close active connections before continuing (checks every 5 seconds, default=1)
+  # https://docs.ansible.com/ansible/2.9/modules/win_wait_for_module.html#win-wait-for-module
+  - name: Wait for connections to port 443 to disconnect before continuing
+    ansible.windows.win_wait_for:
+      host: 0.0.0.0
+      port: 443
+      state: drained
+      sleep: 5
+
+  # Das Reboot with a 900-sec wait for updates etc (default=600), and a 120-sec post-startup delay before continuing
+  # https://docs.ansible.com/ansible/2.9/modules/win_reboot_module.html#win-reboot-module
+  - name: Reboot the server
+    ansible.windows.win_reboot:
+      reboot_timeout: 900
+      post_reboot_delay: 120
+    register: result
+    failed_when: not result.rebooted
+
+  # Show some info since the reboot succeeded
+  - name: Status update - Post-reboot action
+    debug:
+      msg: "Server rebooted after {{ result.elapsed }} seconds. Proceeding with subsequent tasks..."
+  
+  # Start and re-enable the services
+  - name: Start and enable all necessary services
+    ansible.windows.win_service:
+      name: "{{ item }}"
+      state: "{{ service_desired_poweron_state }}"
+      start_mode: "{{ service_desired_poweron_startupmode }}"
+    loop:
+      - "{{ service_name_1 }}"
+      - "{{ service_name_2 }}"
+      - "{{ service_name_3 }}"
+
+  # Use this if a port needs to be ready to accept connections before continuing
+  # https://docs.ansible.com/ansible/2.9/modules/win_wait_for_module.html#win-wait-for-module
+  - name: Wait for port 443 to be active before continuing
+    ansible.windows.win_wait_for:
+      host: 0.0.0.0
+      port: 443
+      state: started
