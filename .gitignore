@@ -1,3 +1,7 @@
+# ENV files ###
+###############
+.env
+
 # Compiled source #
 ###################
 *.com
