@@ -16,6 +16,11 @@ from dotenv import load_dotenv  # pip install python-dotenv
 # Response codes: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/responses#status-codes
 
 
+# Get the hostname
+name = os.popen('hostname').read().split("\n")[0]
+summary_msg = "Patching completed on {}".format(name)
+
+
 # Get the file path from the passed arg
 # Note this is a bad plan lol. Do some input validation here.
 # This sets the email body (the 'content' var) to the text in the dnf history info file
@@ -27,7 +32,7 @@ if len(sys.argv) > 1:
     file.close()
 else:
     # No file path arg (or any arg) was passed
-    content = Content("text/plain", "Patching completed on RHEL9-Srv01.")
+    content = Content("text/plain", summary_msg)
 
 
 
@@ -41,9 +46,9 @@ sg_api_key = os.getenv('SENDGRID_API_KEY')
 
 # Build the mail object parameters
 sg = sendgrid.SendGridAPIClient(api_key=sg_api_key)
-from_email = Email("alerts@gridnorth.tech")
-to_email = To("brian@gridnorth.tech")
-subject = "ALERT: Patching complete on RHEL9-Srv01"
+from_email = Email("alerts@mydomain.com")
+to_email = To("me@mydomain.com")
+subject = "ALERT: {}".format(summary_msg)
 mail = Mail(from_email, to_email, subject, content)
 
 
