@@ -1,0 +1,21 @@
+---
+- name: Install security and critical fixes from Windows Update
+  gather_facts: true
+  hosts: Windows_Dev_Servers
+  vars:
+    patch_job_timestamp: "{{ ansible_facts['date_time']['iso8601_basic_short'] }}"
+
+  - name: Ensure log folder exists
+    ansible.windows.win_file:
+      path: C:\ProgramData\GNT\logs\patching
+      state: directory
+
+  - name: Download and Install
+    ansible.windows.win_updates:
+      category_names:
+        - SecurityUpdates
+        - CriticalUpdates
+        - DefinitionUpdates
+      reboot: true
+      log_path: 'C:\ProgramData\GNT\logs\patching\patchJob_{{ patch_job_timestamp }}.txt'
+
