@@ -24,11 +24,6 @@
       state: latest
       install_recommends: yes
 
-  - name: "Package: Install NetworkManager"
-    ansible.builtin.apt:
-      name: network-manager
-      state: latest
-
   - name: "Service: Ensure containerd is running and enabled"
     ansible.builtin.service:
       name: containerd
