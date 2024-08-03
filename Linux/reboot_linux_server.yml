@@ -1,0 +1,22 @@
+---
+# Run: ansible-playbook reboot_linux.yml -K --extra-vars "selected_hosts=<pattern>"
+- name: Reboot Linux
+  hosts: "{{ selected_hosts }}"
+  gather_facts: true
+  become: true
+  become_method: sudo
+  tasks:
+
+    - name: "Action: Perform a full system reboot"
+      ansible.builtin.reboot:
+        msg: "Ansible has initiated a reboot of this system"
+        reboot_timeout: 180
+        #post_reboot_delay: 90
+      register: result
+      failed_when: not result.rebooted
+
+    # Show the reboot status messages
+    - name: "Status update: Show post-reboot messages"
+      debug:
+        msg: "{{ ansible_hostname }} rebooted after {{ result.elapsed }} seconds."
+...
