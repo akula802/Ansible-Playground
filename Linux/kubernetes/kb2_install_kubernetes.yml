@@ -1,17 +1,23 @@
 ---
 # Created for and tested on Ubuntu Server 24.04
-# Installs prerequisites, installs the kubernetes gpg key and repos, then installs the core packages
 # Run after completing the 'prep new node' playbook
 # Run cmd: ansible-playbook kb2_install_kubernetes.yml -K --extra-vars "selected_hosts=<pattern>"
-- name: "Kubernetes: Install core kubernetes packages (all nodes)"
+- name: "Kubernetes: Install core packages (all nodes)"
   hosts: "{{ selected_hosts }}"
   become: True
   become_method: sudo
+  
+  ##### TASKS #####
   tasks:
 
-  - name: "Package: Apt update (#1)"
-    ansible.builtin.apt:
-      update_cache: yes
+  - name: "Preflight: Run 'apt update'"
+    debug:
+      msg: "Resynchronizing apt package indexes."
+    notify: "Run apt update"
+
+  # Flush to execute any notified handlers now
+  - name: FLush handlers
+    meta: flush_handlers
 
   # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/     
   - name: "Package: Install - kubernetes prerequisites"
@@ -30,11 +36,12 @@
 
   - name: "Shell: Install kubernetes repositories"
     ansible.builtin.shell: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+    notify: "Run apt update"
 
-  - name: "Package: Apt update (#2)"
-    ansible.builtin.apt:
-      update_cache: yes
-    
+  # Flush to execute any notified handlers now
+  - name: FLush handlers
+    meta: flush_handlers
+
   - name: "Package: Install - kubernetes core binaries"
     ansible.builtin.apt:
       name: "{{  item }}"
@@ -43,4 +50,12 @@
       - kubelet
       - kubeadm
       - kubectl
+
+
+  ##### HANDLERS #####
+  handlers:
+
+  - name: "Run apt update"
+    ansible.builtin.apt:
+      update_cache: yes 
 
