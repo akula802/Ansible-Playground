@@ -17,6 +17,7 @@
     notify: "Run apt update"
 
   # Flush to execute any notified handlers now
+  # https://docs.ansible.com/ansible/latest/playbook_guide/playbooks_handlers.html
   - name: Flush handlers
     meta: flush_handlers
 
