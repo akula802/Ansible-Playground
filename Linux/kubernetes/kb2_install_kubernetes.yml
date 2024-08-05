@@ -10,6 +10,7 @@
   ##### TASKS #####
   tasks:
 
+  # Run 'apt update' before doing anything else
   - name: "Preflight: Run 'apt update'"
     debug:
       msg: "Resynchronizing apt package indexes."
@@ -19,8 +20,9 @@
   - name: Flush handlers
     meta: flush_handlers
 
+  # Install packages required to continue
   # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/     
-  - name: "Package: Install - kubernetes prerequisites"
+  - name: "Package: Install kubernetes prerequisites"
     ansible.builtin.apt:
       name: "{{ item  }}"
       state: latest
@@ -42,7 +44,7 @@
   - name: Flush handlers
     meta: flush_handlers
 
-  - name: "Package: Install - kubernetes core binaries"
+  - name: "Package: Install kubernetes core packages"
     ansible.builtin.apt:
       name: "{{  item }}"
       state: latest
