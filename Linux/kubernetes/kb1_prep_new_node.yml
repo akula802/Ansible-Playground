@@ -2,7 +2,7 @@
 # Intended for new 'Ubuntu Server 24.04 LTS' VMs on Proxmox
 # If not on Proxmox, remove the 'Package: Install qemu-guest-agent' task
 # Run after VM is online, added to Ansible inventory, and reachable by Ansible control node
-# Run cmd: ansible-playbook reboot_linux.yml -K --extra-vars "selected_hosts=<pattern>"
+# Run cmd: ansible-playbook kb1_prep_new_node.yml -K --extra-vars "selected_hosts=<pattern>"
 - name: "Setup new kubernetes node (ctl or wrk)"
   hosts: "{{ selected_hosts }}"
   become: True
