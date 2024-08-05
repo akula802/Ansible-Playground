@@ -16,7 +16,7 @@
     notify: "Run apt update"
 
   # Flush to execute any notified handlers now
-  - name: FLush handlers
+  - name: Flush handlers
     meta: flush_handlers
 
   # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/     
@@ -39,7 +39,7 @@
     notify: "Run apt update"
 
   # Flush to execute any notified handlers now
-  - name: FLush handlers
+  - name: Flush handlers
     meta: flush_handlers
 
   - name: "Package: Install - kubernetes core binaries"
