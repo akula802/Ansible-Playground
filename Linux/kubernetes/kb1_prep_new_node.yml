@@ -1,0 +1,55 @@
+---
+# Intended for new 'Ubuntu Server 24.04 LTS' VMs on Proxmox
+# If not on Proxmox, remove the 'Package: Install qemu-guest-agent' task
+# Run after VM is online, added to Ansible inventory, and reachable by Ansible control node
+# Run cmd: ansible-playbook reboot_linux.yml -K --extra-vars "selected_hosts=<pattern>"
+- name: "Setup new kubernetes node (ctl or wrk)"
+  hosts: "{{ selected_hosts }}"
+  become: True
+  become_method: sudo
+  tasks:
+
+  - name: "Package: Apt update"
+    ansible.builtin.apt:
+      update_cache: yes
+
+  - name: "Package: Install qemu-guest-agent"
+    ansible.builtin.apt:
+      name: qemu-guest-agent
+      state: latest
+      install_recommends: yes
+
+  - name: "Package: Install containerd"
+    ansible.builtin.apt:
+      name: containerd
+      state: latest
+      install_recommends: yes
+
+  - name: "Service: Ensure containerd is running and enabled"
+    ansible.builtin.service:
+      name: containerd
+      enabled: true
+      state: started
+
+  - name: "Kernel Module: Load br_netfilter"
+    ansible.builtin.shell: sudo modprobe br_netfilter && echo netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+
+  - name: "Swap: Turn off swap"
+    ansible.builtin.shell: sudo swapoff -a
+
+  - name: "Files: Create /etc/containerd directory"
+    ansible.builtin.file:
+      path: /etc/containerd
+      state: directory
+
+  - name: "Files: Generate containterd default config"
+    ansible.builtin.shell: containerd config default | sudo tee /etc/containerd/config.toml
+
+  - name: "Files: Edit containerd default config"
+    # Change from 'false' to 'true'
+    ansible.builtin.shell: sudo sed -i -e 's/SystemdCgroup = false/SystemdCgroup = true/g' /etc/containerd/config.toml
+
+  - name: "Files: Enable bridging in /etc/sysctl.conf"
+    # Remove the '#' to un-comment
+    ansible.builtin.shell: sudo sed -i -e 's/#net.ipv4.ip_forward=1/net.ipv4.ip_forward=1/g' /etc/sysctl.conf
+

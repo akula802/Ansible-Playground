@@ -1,0 +1,46 @@
+---
+# Created for and tested on Ubuntu Server 24.04
+# Installs prerequisites, installs the kubernetes gpg key and repos, then installs the core packages
+# Run after completing the 'prep new node' playbook
+# Run cmd: ansible-playbook reboot_linux.yml -K --extra-vars "selected_hosts=<pattern>"
+- name: "Kubernetes: Install core binaries (all nodes)"
+  hosts: "{{ selected_hosts }}"
+  become: True
+  become_method: sudo
+  tasks:
+
+  - name: "Package: Apt update (#1)"
+    ansible.builtin.apt:
+      update_cache: yes
+
+  # https://kubernetes.io/docs/setup/production-environment/tools/kubeadm/install-kubeadm/     
+  - name: "Package: Install - kubernetes prerequisites"
+    ansible.builtin.apt:
+      name: "{{ item  }}"
+      state: latest
+      install_recommends: yes
+    loop:
+      - apt-transport-https
+      - ca-certificates
+      - curl
+      - gpg
+
+  - name: "Shell: Install kubernetes gpg key"
+    ansible.builtin.shell: curl -fsSL https://pkgs.k8s.io/core:/stable:/v1.30/deb/Release.key | sudo gpg --dearmor --yes -o /etc/apt/keyrings/kubernetes-apt-keyring.gpg
+
+  - name: "Shell: Install kubernetes repositories"
+    ansible.builtin.shell: echo 'deb [signed-by=/etc/apt/keyrings/kubernetes-apt-keyring.gpg] https://pkgs.k8s.io/core:/stable:/v1.30/deb/ /' | sudo tee /etc/apt/sources.list.d/kubernetes.list
+
+  - name: "Package: Apt update (#2)"
+    ansible.builtin.apt:
+      update_cache: yes
+    
+  - name: "Package: Install - kubernetes core binaries"
+    ansible.builtin.apt:
+      name: "{{  item }}"
+      state: latest
+    loop:
+      - kubelet
+      - kubeadm
+      - kubectl
+
