@@ -2,8 +2,8 @@
 # Created for and tested on Ubuntu Server 24.04
 # Installs prerequisites, installs the kubernetes gpg key and repos, then installs the core packages
 # Run after completing the 'prep new node' playbook
-# Run cmd: ansible-playbook reboot_linux.yml -K --extra-vars "selected_hosts=<pattern>"
-- name: "Kubernetes: Install core binaries (all nodes)"
+# Run cmd: ansible-playbook kb2_install_kubernetes.yml -K --extra-vars "selected_hosts=<pattern>"
+- name: "Kubernetes: Install core kubernetes packages (all nodes)"
   hosts: "{{ selected_hosts }}"
   become: True
   become_method: sudo
