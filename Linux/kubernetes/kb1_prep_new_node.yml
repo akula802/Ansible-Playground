@@ -32,7 +32,7 @@
       state: started
 
   - name: "Kernel Module: Load br_netfilter"
-    ansible.builtin.shell: sudo modprobe br_netfilter && echo netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
+    ansible.builtin.shell: sudo modprobe br_netfilter && echo br_netfilter | sudo tee /etc/modules-load.d/kubernetes.conf
 
   - name: "Swap: Turn off swap"
     ansible.builtin.shell: sudo swapoff -a
