@@ -1,0 +1,43 @@
+---
+# Purpose: Enable SSH to the remote host as the ansible user, without a password, and use sudo privileges.
+# Assumes IdM/AD is not in use. I wrote this for my homelab which for now only has local users.
+
+# You must have an existing sudo user on the remote system, perhaps from the build.
+# You must also first accept/install the remote host key. Run 'ssh <remote_host>' as the ansible user.
+# You must also first create the vaults and vault password files.
+
+# Run the playbook with:
+# ansible-playbook -k -b -K playbooks/create-remote-mgmt-user.yml -e "selected_hosts=<hostname>" -u <existing_user> --vault-password-file=/path/to-file
+
+
+- name: Set up remote management user
+  hosts: "{{ selected_hosts }}"
+  gather_facts: false
+  vars:
+    # Set this to the name of the ansible user that will manage the remote host
+    user_name: ansible_user_account
+  vars_files:
+    # This vault stores the hash as the 'pw_hash' variable
+    # Generate the hash with: mkpasswd --method=sha-512 <strong-password>
+    - ../vaults/pw-enc-hash.yml
+  tasks:
+
+  - name: Create user {{ user_name }}
+    ansible.builtin.user:
+      name: "{{ user_name }}"
+      password: "{{ pw_hash }}"
+
+  - name: Grant sudo rights for {{ user_name }}
+    ansible.builtin.copy:
+      content: "{{ user_name }} ALL=(ALL) NOPASSWD: ALL"
+      dest: /etc/sudoers.d/{{ user_name }}
+      owner: root
+      group: root
+      mode: '0644'
+
+  # This copies the ansible user's SSH public key from the control node to the remote managed node
+  - name: Copy the {{ user_name }} SSH key to the remote host
+    ansible.posix.authorized_key:
+      user: "{{ user_name }}"
+      key: "{{ lookup('file', '/home/{{ user_name }}/.ssh/id_rsa.pub') }}"  
+...
