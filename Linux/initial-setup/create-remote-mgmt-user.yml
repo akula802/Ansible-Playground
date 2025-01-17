@@ -39,5 +39,6 @@
   - name: Copy the {{ user_name }} SSH key to the remote host
     ansible.posix.authorized_key:
       user: "{{ user_name }}"
-      key: "{{ lookup('file', '/home/{{ user_name }}/.ssh/id_rsa.pub') }}"  
+      key: "{{ lookup('file', '/home/{{ user_name }}/.ssh/id_rsa.pub') }}"
+      state: present 
 ...
