@@ -5,6 +5,7 @@
 # You must have an existing sudo user on the remote system, perhaps from the build.
 # You must also first accept/install the remote host key. Run 'ssh <remote_host>' as the ansible user.
 # You must also first create the vaults and vault password files.
+# You must also first install the ansible.posix collection on the control node
 
 # Run the playbook with:
 # ansible-playbook -k -b -K playbooks/create-remote-mgmt-user.yml -e "selected_hosts=<hostname>" -u <existing_user> --vault-password-file=/path/to-file
