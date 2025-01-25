@@ -1,0 +1,15 @@
+---
+- name: Create hosts file on managed node
+  hosts: all
+  gather_facts: true
+  tasks:
+
+  - name: Copy hosts file template to node
+    ansible.builtin.template:
+      src: templates/hosts
+      dest: /etc/hosts
+      owner: root
+      group: root
+      mode: '0644'
+      force: true
+...
