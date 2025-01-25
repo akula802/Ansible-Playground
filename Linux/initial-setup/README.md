@@ -5,5 +5,5 @@ These resources I use in my lab to configure new nodes as they come online.
 
 ### Requirements
 
-* The 'ansible_maaged' parameter must be set in ansible.cfg in order for the templates to include the desired comment or information.
+* The 'ansible_managed' parameter must be set in ansible.cfg in order for the templates to include the desired comment or information.
 * The 'create-remote-mgmt-user' playbook requires the ansible.posix collection.
