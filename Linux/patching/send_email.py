@@ -10,16 +10,13 @@ from dotenv import load_dotenv  # pip install python-dotenv
 # Local app imports
 # none at this time
 
-
 # Notes
 # From: https://docs.sendgrid.com/for-developers/sending-email/quickstart-python
 # Response codes: https://docs.sendgrid.com/api-reference/how-to-use-the-sendgrid-v3-api/responses#status-codes
 
-
 # Get the hostname
 name = os.popen('hostname').read().split("\n")[0]
 summary_msg = "Patching completed on {}".format(name)
-
 
 # Get the file path from the passed arg
 # Note this is a bad plan lol. Do some input validation here.
@@ -34,15 +31,11 @@ else:
     # No file path arg (or any arg) was passed
     content = Content("text/plain", summary_msg)
 
-
-
 # Load the .env file
 load_dotenv()
 
-
 # Initial variables
 sg_api_key = os.getenv('SENDGRID_API_KEY')
-
 
 # Build the mail object parameters
 sg = sendgrid.SendGridAPIClient(api_key=sg_api_key)
@@ -51,10 +44,8 @@ to_email = To("me@mydomain.com")
 subject = "ALERT: {}".format(summary_msg)
 mail = Mail(from_email, to_email, subject, content)
 
-
 # get a JSON-ready representation of the mail object
 mail_json = mail.get()
-
 
 # Send an HTTP POST request to /mail/send
 response = sg.client.mail.send.post(request_body=mail_json)
